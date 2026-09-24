@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Розклад 4ОК2</title>
+
+  <!-- Telegram WebApp SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#070a12" />
+
+  <style>
+    :root {
+      --bg-base: #070a10;
+      --card-bg: rgba(18, 23, 34, 0.65);
+      --card-bg-hover: rgba(26, 33, 48, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-border-specular: rgba(255, 255, 255, 0.18);
+      --card-inner-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      --text-main: #ffffff;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --tg-blue-gradient: linear-gradient(140deg, #257bf7 0%, #0d5ad6 55%, #084bbb 100%);
+      --tg-blue-glow: rgba(29, 123, 247, 0.42);
+      --tg-blue-glass: rgba(29, 123, 247, 0.14);
+      --green-live: #34c759;
+      --radius-xl: 24px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 20px 16px calc(30px + env(safe-area-inset-bottom, 12px));
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Ambient atmospheric background lighting */
+    body::before {
+      content: "";
+      position: fixed;
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 580px;
+      height: 480px;
+      background: radial-gradient(circle at 50% 30%, rgba(37, 123, 247, 0.18) 0%, rgba(13, 90, 214, 0.06) 50%, transparent 75%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      bottom: -60px;
+      right: 5%;
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle, rgba(52, 199, 89, 0.05) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 6px;
+    }
+
+    .group-left {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .group-tag {
+      font-size: 1.3rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #ffffff;
+      text-shadow: 0 2px 12px rgba(255, 255, 255, 0.15);
+    }
+
+    .header-subtag {
+      font-size: 0.7rem;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      padding: 3px 9px;
+      border-radius: 9px;
+      color: #cbd5e1;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .date-tag,
+    .clock-tag {
+      font-variant-numeric: tabular-nums;
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 5px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 12px rgba(0, 0, 0, 0.25);
+      letter-spacing: -0.01em;
+    }
+
+    /* Day selector bar with frosted liquid effect */
+    .day-selector-bar {
+      background: rgba(18, 24, 36, 0.65);
+      backdrop-filter: blur(32px) saturate(200%);
+      -webkit-backdrop-filter: blur(32px) saturate(200%);
+      border: 1px solid var(--card-border);
+      border-top: 1px solid var(--card-border-specular);
+      box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.45), var(--card-inner-shadow);
+      border-radius: 18px;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+    }
+
+    .day-tab {
+      flex: 1;
+      height: 40px;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      border-radius: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.24s cubic-bezier(0.2, 0.9, 0.3, 1);
+    }
+
+    .day-tab:active {
+      transform: scale(0.96);
+    }
+
+    .day-tab.active {
+      background: var(--tg-blue-gradient);
+      color: #ffffff;
+      box-shadow: 0 6px 18px -2px var(--tg-blue-glow), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+      border-top: 1px solid rgba(255, 255, 255, 0.45);
+    }
+
+    .day-tab .today-indicator {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--green-live);
+      box-shadow: 0 0 8px var(--green-live);
+    }
+
+    .day-divider {
+      width: 1px;
+      height: 18px;
+      background: rgba(255, 255, 255, 0.09);
+      flex-shrink: 0;
+    }
+
+    .hero-widget {
+      position: relative;
+      background: var(--tg-blue-gradient);
+      backdrop-filter: blur(40px) saturate(210%);
+      -webkit-backdrop-filter: blur(40px) saturate(210%);
+      border-radius: var(--radius-xl);
+      border: 1px solid rgba(255, 255, 255, 0.32);
+      border-top: 1.5px solid rgba(255, 255, 255, 0.88);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 20px 42px -6px var(--tg-blue-glow), inset 0 1.5px 1px rgba(255, 255, 255, 0.5);
+      transition: all 0.32s cubic-bezier(0.2, 0.9, 0.3, 1);
+      overflow: hidden;
+    }
+
+    /* Glossy reflection on the hero widget */
+    .hero-widget::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 48%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 100%);
+      pointer-events: none;
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    }
+
+    /* Fallback calm mode only when day is finished or weekend */
+    .hero-widget.is-idle {
+      background: var(--card-bg) !important;
+      border: 1px solid var(--card-border) !important;
+      border-top: 1.5px solid var(--card-border-specular) !important;
+      box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.5), var(--card-inner-shadow) !important;
+    }
+
+    .hero-widget.is-idle .status-capsule {
+      background: rgba(255, 255, 255, 0.08) !important;
+      color: #cbd5e1 !important;
+      box-shadow: none !important;
+    }
+
+    .hero-widget.is-idle .widget-timer-label {
+      color: var(--text-secondary) !important;
+    }
+
+    .hero-widget.is-idle .widget-timer-val {
+      color: #ffffff !important;
+    }
+
+    .hero-widget.is-idle .widget-lesson-title {
+      color: #ffffff !important;
+      font-weight: 600 !important;
+    }
+
+    .hero-widget.is-idle .meta-chip {
+      color: var(--text-secondary) !important;
+    }
+
+    .hero-widget.is-idle .room-chip {
+      background: rgba(255, 255, 255, 0.08) !important;
+      border-color: rgba(255, 255, 255, 0.14) !important;
+      color: #e2e8f0 !important;
+    }
+
+    .widget-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .status-capsule {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 13px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      background: #ffffff;
+      color: #0b57cf;
+      border: none;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.22);
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #34c759;
+      box-shadow: 0 0 8px #34c759;
+      display: inline-block;
+      animation: pulse-dot 1.8s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.8); }
+    }
+
+    .widget-timer-wrap {
+      display: flex;
+      align-items: baseline;
+      gap: 7px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .widget-timer-label {
+      font-size: 0.82rem;
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 500;
+      letter-spacing: -0.01em;
+    }
+
+    .widget-timer-val {
+      font-variant-numeric: tabular-nums;
+      font-size: 1.38rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+      text-shadow: 0 2px 14px rgba(0, 0, 0, 0.25);
+    }
+
+    .widget-body {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .widget-lesson-title {
+      font-size: 1.22rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+      line-height: 1.3;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .widget-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .meta-chip {
+      font-size: 0.84rem;
+      color: rgba(255, 255, 255, 0.95);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+    }
+
+    .room-chip {
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.24);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.38);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+      letter-spacing: 0.01em;
+    }
+
+    .schedule-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .lesson-card {
+      position: relative;
+      background: var(--card-bg);
+      backdrop-filter: blur(28px) saturate(190%);
+      -webkit-backdrop-filter: blur(28px) saturate(190%);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--card-border);
+      border-top: 1px solid var(--card-border-specular);
+      box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.35), var(--card-inner-shadow);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      transition: all 0.28s cubic-bezier(0.2, 0.9, 0.3, 1);
+    }
+
+    .lesson-left {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .lesson-number-pill {
+      min-width: 66px;
+      height: 32px;
+      padding: 0 9px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.73rem;
+      font-weight: 800;
+      color: #94a3b8;
+      letter-spacing: -0.01em;
+      flex-shrink: 0;
+      transition: all 0.24s ease;
+    }
+
+    .lesson-info {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .lesson-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .lesson-sub {
+      font-size: 0.81rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .lesson-right {
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .lesson-time {
+      font-variant-numeric: tabular-nums;
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: #94a3b8;
+      letter-spacing: -0.01em;
+    }
+
+    /* Active Lesson Card (During Class): Elevated royal blue glass */
+    .lesson-card.is-active-lesson {
+      background: var(--tg-blue-gradient) !important;
+      border: 1px solid rgba(255, 255, 255, 0.32) !important;
+      border-top: 1.5px solid rgba(255, 255, 255, 0.88) !important;
+      transform: scale(1.025);
+      box-shadow: 0 16px 38px -6px var(--tg-blue-glow), inset 0 1.5px 1px rgba(255, 255, 255, 0.5) !important;
+      z-index: 2;
+    }
+
+    .lesson-card.is-active-lesson .lesson-number-pill {
+      background: #ffffff !important;
+      color: #0b57cf !important;
+      border: none !important;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22);
+      font-weight: 800 !important;
+    }
+
+    .lesson-card.is-active-lesson .lesson-name {
+      color: #ffffff !important;
+      font-weight: 800 !important;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .lesson-card.is-active-lesson .lesson-sub {
+      color: rgba(255, 255, 255, 0.95) !important;
+    }
+
+    .lesson-card.is-active-lesson .room-chip {
+      background: rgba(255, 255, 255, 0.24) !important;
+      border-color: rgba(255, 255, 255, 0.38) !important;
+      color: #ffffff !important;
+      font-weight: 700;
+    }
+
+    .lesson-card.is-active-lesson .lesson-time {
+      color: #ffffff !important;
+      font-weight: 700;
+    }
+
+    /* Subtle Highlight For Next Lesson During Break */
+    .lesson-card.is-next-lesson {
+      border: 1.5px solid rgba(37, 123, 247, 0.5);
+      border-top: 1.5px solid rgba(255, 255, 255, 0.42);
+      background: rgba(37, 123, 247, 0.09);
+      box-shadow: 0 8px 24px -4px rgba(37, 123, 247, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      transform: none !important;
+    }
+
+    .lesson-card.is-next-lesson .lesson-number-pill {
+      border-color: rgba(37, 123, 247, 0.5);
+      color: #38bdf8;
+      background: rgba(37, 123, 247, 0.2);
+      box-shadow: 0 2px 8px rgba(37, 123, 247, 0.2);
+    }
+
+    /* Bottom Dismissal Card */
+    .bottom-dismissal-card {
+      background: rgba(18, 24, 36, 0.65);
+      backdrop-filter: blur(32px) saturate(190%);
+      -webkit-backdrop-filter: blur(32px) saturate(190%);
+      border: 1px solid var(--card-border);
+      border-top: 1px solid var(--card-border-specular);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.4), var(--card-inner-shadow);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 2px;
+    }
+
+    .dismissal-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .dismissal-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 11px;
+      background: rgba(37, 123, 247, 0.16);
+      border: 1px solid rgba(37, 123, 247, 0.32);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #38bdf8;
+      flex-shrink: 0;
+    }
+
+    .dismissal-text-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .dismissal-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.015em;
+    }
+
+    .dismissal-sub {
+      font-size: 0.77rem;
+      color: var(--text-secondary);
+    }
+
+    .dismissal-badge {
+      font-variant-numeric: tabular-nums;
+      font-size: 0.86rem;
+      font-weight: 800;
+      padding: 6px 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      white-space: nowrap;
+    }
+
+    .bottom-dismissal-card.is-finished {
+      background: rgba(52, 199, 89, 0.14);
+      border-color: rgba(52, 199, 89, 0.32);
+      border-top-color: rgba(52, 199, 89, 0.55);
+      box-shadow: 0 12px 28px -6px rgba(52, 199, 89, 0.25);
+    }
+
+    .bottom-dismissal-card.is-finished .dismissal-icon {
+      background: rgba(52, 199, 89, 0.22);
+      border-color: rgba(52, 199, 89, 0.45);
+      color: #4cd964;
+    }
+
+    .bottom-dismissal-card.is-finished .dismissal-badge {
+      background: rgba(52, 199, 89, 0.22);
+      border-color: rgba(52, 199, 89, 0.45);
+      color: #4cd964;
+    }
+  </style>
+</head>
+<body>
+
+  <main class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="group-left">
+        <div class="group-tag">4ОК2</div>
+        <div class="header-subtag">РОЗКЛАД</div>
+      </div>
+      <div class="header-right">
+        <div class="date-tag" id="live-date">--.--.----</div>
+        <div class="clock-tag" id="live-clock">--:--:--</div>
+      </div>
+    </header>
+
+    <!-- Top day selector bar -->
+    <nav class="day-selector-bar" id="day-bar">
+      <button class="day-tab" data-day="1"><span>ПН</span></button>
+      <div class="day-divider"></div>
+      <button class="day-tab" data-day="2"><span>ВТ</span></button>
+      <div class="day-divider"></div>
+      <button class="day-tab" data-day="3"><span>СР</span></button>
+      <div class="day-divider"></div>
+      <button class="day-tab" data-day="4"><span>ЧТ</span></button>
+      <div class="day-divider"></div>
+      <button class="day-tab" data-day="5"><span>ПТ</span></button>
+    </nav>
+
+    <!-- Top hero live widget -->
+    <section class="hero-widget" id="hero-widget">
+      <div class="widget-header">
+        <span class="status-capsule" id="widget-status">Завантаження...</span>
+        <div class="widget-timer-wrap">
+          <span class="widget-timer-label" id="widget-timer-label">До кінця:</span>
+          <span class="widget-timer-val" id="widget-timer-val">--:--</span>
+        </div>
+      </div>
+
+      <div class="widget-body">
+        <div class="widget-lesson-title" id="widget-title">—</div>
+        <div class="widget-meta-row">
+          <span class="meta-chip" id="widget-teacher">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.9;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span id="widget-teacher-text">—</span>
+          </span>
+          <span class="room-chip" id="widget-room">—</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Schedule Feed -->
+    <section class="schedule-feed" id="schedule-feed"></section>
+
+    <!-- Bottom dismissal card -->
+    <div class="bottom-dismissal-card" id="bottom-dismissal-card">
+      <div class="dismissal-left">
+        <div class="dismissal-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        </div>
+        <div class="dismissal-text-wrap">
+          <div class="dismissal-title" id="dismissal-title">Додому після пар</div>
+          <div class="dismissal-sub" id="dismissal-sub">Кінець занять о 17:45</div>
+        </div>
+      </div>
+      <div class="dismissal-badge" id="dismissal-badge">--:--</div>
+    </div>
+  </main>
+
+  <script>
+    if (window.Telegram && window.Telegram.WebApp) {
+      try {
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+      } catch (e) {
+        console.warn("Telegram WebApp not initialized", e);
+      }
+    }
+
+    const BELLS = {
+      1: { start: "13:15", end: "14:15" },
+      2: { start: "14:25", end: "15:25" },
+      3: { start: "15:35", end: "16:35" },
+      4: { start: "16:45", end: "17:45" }
+    };
+
+    const SCHEDULE = {
+      1: [ // ПН
+        { num: 1, name: "Крос-платформне програмування", teacher: "Ажгіревич А.В.", aud: "" },
+        { num: 2, name: "Об'єктно-орієнтоване програмування", teacher: "Тичук Р.Б.", aud: "232" },
+        { num: 3, name: "Фізичне виховання", teacher: "Терещенко В.В.", aud: "с/з" }
+      ],
+      2: [ // ВТ
+        { num: 1, name: "Операційні системи", teacher: "Медведська В.Б.", aud: "223" },
+        { num: 2, name: "Комп'ютерна безпека та захист інформації", teacher: "Бондар Р.А.", aud: "" },
+        { num: 3, name: "Дискретна математика", teacher: "Заліська С.С.", aud: "226" },
+        { num: 4, name: "Комп'ютерна безпека / Системне прогр.", teacher: "Бондар Р.А. / Тичук Р.Б.", aud: "232" }
+      ],
+      3: [ // СР
+        { num: 1, name: "Системне програмування", teacher: "Тичук Р.Б.", aud: "232" },
+        { num: 2, name: "Основи робототехніки", teacher: "Тичук Р.Б.", aud: "232" },
+        { num: 3, name: "Економіка та управління проєктами", teacher: "Кукурудзяк Л.В.", aud: "2414" },
+        { num: 4, name: "Економіка та управління проєктами", teacher: "Кукурудзяк Л.В.", aud: "2414" }
+      ],
+      4: [ // ЧТ
+        { num: 1, name: "Крос-платформне програмування", teacher: "Ажгіревич А.В.", aud: "" },
+        { num: 2, name: "Об'єктно-орієнтоване програмування", teacher: "Тичук Р.Б.", aud: "232" },
+        { num: 3, name: "Фізичне виховання", teacher: "Терещенко В.В.", aud: "с/з" },
+        { num: 4, name: "Web-програмування", teacher: "Заліська С.С.", aud: "226" }
+      ],
+      5: [ // ПТ
+        { num: 1, name: "Основи робототехніки", teacher: "Тичук Р.Б.", aud: "232" },
+        { num: 2, name: "Web-програмування", teacher: "Заліська С.С.", aud: "226" }
+      ]
+    };
+
+    let selectedDay = 4;
+    let activeLessonNum = null;
+    let nextLessonNum = null;
+
+    function timeToSeconds(timeStr) {
+      const [h, m] = timeStr.split(':').map(Number);
+      return h * 3600 + m * 60;
+    }
+
+    function formatCountdown(sec) {
+      if (sec <= 0) return "00:00";
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      const pad = n => String(n).padStart(2, '0');
+      return `${pad(m)}:${pad(s)}`;
+    }
+
+    function formatHoursMinutes(sec) {
+      if (sec <= 0) return "0 хв";
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      return h > 0 ? `${h} год ${m} хв` : `${m} хв`;
+    }
+
+    function renderSchedule(day) {
+      const feed = document.getElementById('schedule-feed');
+      if (!feed) return;
+      feed.innerHTML = '';
+
+      const lessons = SCHEDULE[day] || [];
+      if (lessons.length === 0) {
+        feed.innerHTML = `
+          <div class="lesson-card" style="justify-content: center; color: var(--text-secondary); padding: 24px;">
+            У цей день занять немає
+          </div>`;
+        return;
+      }
+
+      const today = new Date().getDay();
+
+      lessons.forEach(l => {
+        const bell = BELLS[l.num];
+        const card = document.createElement('article');
+        card.className = 'lesson-card';
+        card.id = `lesson-card-${l.num}`;
+
+        if (day === today && activeLessonNum === l.num) {
+          card.classList.add('is-active-lesson');
+        } else if (day === today && nextLessonNum === l.num) {
+          card.classList.add('is-next-lesson');
+        }
+
+        const roomHtml = l.aud ? `<span class="room-chip">ауд. ${l.aud}</span>` : '';
+
+        card.innerHTML = `
+          <div class="lesson-left">
+            <div class="lesson-number-pill">${l.num} ПАРА</div>
+            <div class="lesson-info">
+              <div class="lesson-name">${l.name}</div>
+              <div class="lesson-sub">
+                <span>${l.teacher}</span>
+                ${roomHtml}
+              </div>
+            </div>
+          </div>
+          <div class="lesson-right">
+            <div class="lesson-time">${bell.start} - ${bell.end}</div>
+          </div>
+        `;
+        feed.appendChild(card);
+      });
+    }
+
+    function setActiveLessonCard(num) {
+      activeLessonNum = num;
+      nextLessonNum = null;
+      applyCardHighlights();
+    }
+
+    function setNextLessonCard(num) {
+      activeLessonNum = null;
+      nextLessonNum = num;
+      applyCardHighlights();
+    }
+
+    function applyCardHighlights() {
+      const today = new Date().getDay();
+
+      document.querySelectorAll('.lesson-card').forEach(card => {
+        card.classList.remove('is-active-lesson', 'is-next-lesson');
+      });
+
+      if (selectedDay === today) {
+        if (activeLessonNum) {
+          const card = document.getElementById(`lesson-card-${activeLessonNum}`);
+          if (card) card.classList.add('is-active-lesson');
+        } else if (nextLessonNum) {
+          const nextCard = document.getElementById(`lesson-card-${nextLessonNum}`);
+          if (nextCard) nextCard.classList.add('is-next-lesson');
+        }
+      }
+    }
+
+    function updateBottomDismissal(secRemaining, finalEndTime, isToday, totalLessonsCount) {
+      const card = document.getElementById('bottom-dismissal-card');
+      const title = document.getElementById('dismissal-title');
+      const sub = document.getElementById('dismissal-sub');
+      const badge = document.getElementById('dismissal-badge');
+
+      if (!card || !title || !sub || !badge) return;
+
+      if (!isToday) {
+        card.classList.remove('is-finished');
+        title.textContent = 'Кінець пар цього дня';
+        sub.textContent = `За розкладом ${totalLessonsCount} ${totalLessonsCount === 1 ? 'пара' : totalLessonsCount < 5 ? 'пари' : 'пар'}`;
+        badge.textContent = `о ${finalEndTime}`;
+        return;
+      }
+
+      if (secRemaining <= 0) {
+        card.classList.add('is-finished');
+        title.textContent = 'Всі пари закінчилися! 🎉';
+        sub.textContent = 'Можна спокійно йти додому';
+        badge.textContent = 'Вільні';
+        return;
+      }
+
+      card.classList.remove('is-finished');
+      title.textContent = 'Додому після пар';
+      sub.textContent = `Остання пара до ${finalEndTime}`;
+      badge.textContent = `ще ${formatHoursMinutes(secRemaining)}`;
+    }
+
+    function tick() {
+      const now = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const currentDay = now.getDay();
+      const currentSec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+
+      const dateEl = document.getElementById('live-date');
+      if (dateEl) {
+        dateEl.textContent = `${pad(now.getDate())}.${pad(now.getMonth() + 1)}.${now.getFullYear()}`;
+      }
+
+      const clockEl = document.getElementById('live-clock');
+      if (clockEl) {
+        clockEl.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+      }
+
+      const heroWidget = document.getElementById('hero-widget');
+      const badge = document.getElementById('widget-status');
+      const timerLabel = document.getElementById('widget-timer-label');
+      const timerVal = document.getElementById('widget-timer-val');
+      const title = document.getElementById('widget-title');
+      const teacherText = document.getElementById('widget-teacher-text');
+      const roomChip = document.getElementById('widget-room');
+
+      if (!badge || !timerVal || !title) return;
+
+      // Update bottom dismissal
+      const dayPairs = SCHEDULE[selectedDay] || [];
+      if (dayPairs.length > 0) {
+        const lastPairForDay = dayPairs[dayPairs.length - 1];
+        const dayEndSec = timeToSeconds(BELLS[lastPairForDay.num].end);
+        updateBottomDismissal(dayEndSec - currentSec, BELLS[lastPairForDay.num].end, selectedDay === currentDay, dayPairs.length);
+      }
+
+      // Weekend handling
+      if (currentDay === 0 || currentDay === 6) {
+        heroWidget.className = 'hero-widget is-idle';
+        badge.innerHTML = 'Вихідний';
+        timerLabel.textContent = 'Статус:';
+        timerVal.textContent = 'Вільні';
+        title.textContent = 'Сьогодні занять немає';
+        if (teacherText) teacherText.textContent = 'Гарного відпочинку!';
+        if (roomChip) roomChip.style.display = 'none';
+        setActiveLessonCard(null);
+        return;
+      }
+
+      const todayPairs = SCHEDULE[currentDay] || [];
+      if (todayPairs.length === 0) {
+        heroWidget.className = 'hero-widget is-idle';
+        badge.innerHTML = 'Пар немає';
+        timerLabel.textContent = 'Статус:';
+        timerVal.textContent = 'Вільні';
+        title.textContent = 'Занять не заплановано';
+        if (teacherText) teacherText.textContent = 'Вільний день';
+        if (roomChip) roomChip.style.display = 'none';
+        setActiveLessonCard(null);
+        return;
+      }
+
+      const firstPair = todayPairs[0];
+      const lastPair = todayPairs[todayPairs.length - 1];
+      const dayStartSec = timeToSeconds(BELLS[firstPair.num].start);
+      const dayEndSec = timeToSeconds(BELLS[lastPair.num].end);
+
+      // Before first pair of the day (stays highlighted anticipating lessons)
+      if (currentSec < dayStartSec) {
+        heroWidget.className = 'hero-widget';
+        badge.innerHTML = 'Скоро початок';
+        timerLabel.textContent = 'До 1-ї пари:';
+        timerVal.textContent = formatCountdown(dayStartSec - currentSec);
+        title.textContent = `1-а: ${firstPair.name}`;
+        if (teacherText) teacherText.textContent = firstPair.teacher;
+        if (roomChip) {
+          if (firstPair.aud) {
+            roomChip.style.display = 'inline-block';
+            roomChip.textContent = `ауд. ${firstPair.aud}`;
+          } else {
+            roomChip.style.display = 'none';
+          }
+        }
+        setActiveLessonCard(null);
+        return;
+      }
+
+      // After all pairs finished
+      if (currentSec >= dayEndSec) {
+        heroWidget.className = 'hero-widget is-idle';
+        badge.innerHTML = 'Завершено';
+        timerLabel.textContent = 'Статус:';
+        timerVal.textContent = 'Вільні';
+        title.textContent = 'На сьогодні все!';
+        if (teacherText) teacherText.textContent = 'Пари закінчилися';
+        if (roomChip) roomChip.style.display = 'none';
+        setActiveLessonCard(null);
+        return;
+      }
+
+      // ACTIVE SCHOOL HOURS: Check current pair or break
+      for (let i = 0; i < todayPairs.length; i++) {
+        const pair = todayPairs[i];
+        const bell = BELLS[pair.num];
+        const startSec = timeToSeconds(bell.start);
+        const endSec = timeToSeconds(bell.end);
+
+        // CASE 1: LESSON IS CURRENTLY IN PROGRESS
+        // TOP HERO WIDGET IS ALWAYS VIBRANT ROYAL BLUE LIQUID GLASS!
+        // ACTIVE LESSON IN FEED IS ALSO VIBRANT ROYAL BLUE!
+        if (currentSec >= startSec && currentSec < endSec) {
+          heroWidget.className = 'hero-widget';
+          setActiveLessonCard(pair.num);
+
+          badge.innerHTML = `<span class="live-dot"></span>Йде ${pair.num}-а пара`;
+          timerLabel.textContent = 'До кінця:';
+          timerVal.textContent = formatCountdown(endSec - currentSec);
+          title.textContent = pair.name;
+          if (teacherText) teacherText.textContent = pair.teacher;
+          if (roomChip) {
+            if (pair.aud) {
+              roomChip.style.display = 'inline-block';
+              roomChip.textContent = `ауд. ${pair.aud}`;
+            } else {
+              roomChip.style.display = 'none';
+            }
+          }
+          return;
+        }
+
+        // CASE 2: BREAK IS RUNNING
+        // TOP HERO WIDGET REMAINS VIBRANT ROYAL BLUE LIQUID GLASS!
+        if (i > 0) {
+          const prevPair = todayPairs[i - 1];
+          const prevEndSec = timeToSeconds(BELLS[prevPair.num].end);
+
+          if (currentSec >= prevEndSec && currentSec < startSec) {
+            heroWidget.className = 'hero-widget';
+            setNextLessonCard(pair.num);
+
+            badge.innerHTML = '☕ Перерва';
+            timerLabel.textContent = 'До дзвінка:';
+            timerVal.textContent = formatCountdown(startSec - currentSec);
+            title.textContent = `Наступна: ${pair.name}`;
+            if (teacherText) teacherText.textContent = pair.teacher;
+            if (roomChip) {
+              if (pair.aud) {
+                roomChip.style.display = 'inline-block';
+                roomChip.textContent = `ауд. ${pair.aud}`;
+              } else {
+                roomChip.style.display = 'none';
+              }
+            }
+            return;
+          }
+        }
+      }
+
+      heroWidget.className = 'hero-widget';
+      setActiveLessonCard(null);
+    }
+
+    function setupInteractions() {
+      const tabs = document.querySelectorAll('.day-tab');
+      const today = new Date().getDay();
+
+      tabs.forEach(tab => {
+        const d = parseInt(tab.dataset.day, 10);
+        if (d === today) {
+          const dot = document.createElement('span');
+          dot.className = 'today-indicator';
+          tab.appendChild(dot);
+        }
+
+        if (d === selectedDay) {
+          tab.classList.add('active');
+        }
+
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          selectedDay = d;
+          renderSchedule(selectedDay);
+          tick();
+        });
+      });
+    }
+
+    function init() {
+      const now = new Date();
+      let day = now.getDay();
+      if (day >= 1 && day <= 5) {
+        selectedDay = day;
+      } else {
+        selectedDay = 4;
+      }
+
+      setupInteractions();
+      renderSchedule(selectedDay);
+      tick();
+      setInterval(tick, 1000);
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
